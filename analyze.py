@@ -1,8 +1,10 @@
+#Finds weights for each number given an image and the positions of each numbers. 0's are used to represent empty spaces.
+
 from PIL import Image
 import numpy as np
 import Neuron
 
-sudoku = "530070000600195000098000060800060003400803001700020006060000280000419005000080079"
+
 
 #Get's positions including 0's
 
@@ -53,7 +55,24 @@ def greatest(li):
     if waschanged: return li.index(greatest) +1
     else: return 0
 
-def analyze(f):
+#Solves sudoku by brute force
+
+def solve(sudoku):
+  emptypos = sudoku.find("0")
+  if emptypos == -1:
+    return sudoku
+  not_num = set()
+  for j in range(81):
+    if emptypos//9 == j//9 or emptypos%9 == j%9 or (emptypos//27 == j//27 and emptypos%9//3 == j%9//3) :
+      not_num.add(sudoku[j])
+  for num in "123456789":
+    if num not in not_num:
+      solution = solve(sudoku[:emptypos]+num+sudoku[emptypos+1:])
+      if solution: return solution
+  return False
+
+
+def analyze(f,sudoku):
     #initialize
     img = Image.open(f)
     positions = get_positions()
@@ -78,6 +97,7 @@ def analyze(f):
 
     #Test on Training set
     #TODO: SPLIT TRAINING FROM TESTING DATA IN ORDER TO AVOID OVERFITTING!!!
+    #TODO: ADD PREDICTIONS FOR POSITIONS OF 0's
 
     prediction = ""
     for i in range(len(sudoku)-len(positions[0])):
@@ -92,4 +112,6 @@ def analyze(f):
     print(prediction)
     print(ys[7])
 
-analyze("imgpsh_fullsize.jpg")
+if __name__ == "__main__":
+    sudoku = "530070000600195000098000060800060003400803001700020006060000280000419005000080079"
+    analyze("imgpsh_fullsize.jpg",sudoku)
